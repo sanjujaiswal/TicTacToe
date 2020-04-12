@@ -4,6 +4,9 @@ echo "-----Welcome to Tic-Tac-Toe Game-----"
 #Constants declarations
 NUMBER=2
 TOTAL_COUNT=9
+COMPUTER="0"
+ROW=3
+COLUMN=3
 #Variables declarations
 tossPlayer=0
 moveCount=1
@@ -24,8 +27,7 @@ function tossToPlayFirst(){
 #Function to reset board
 function resetBoard(){
 	currentPlayer=$( tossToPlayFirst );
-	gameStatus=1;
-	declare -a board;
+	gameStatus=0;
 	initialize
 }
 
@@ -39,18 +41,16 @@ function initialize(){
       do
          board[$rowPosition,$columnPosition]="-"
       done
-      echo "| ${board[@]} |"
    done
-	echo "---------"
 		displayBoard
 }
 
-#Function to print board
+#Function to display board
 function displayBoard(){
 echo "---------------"
-	for (( row=1;row<=3;row++ ))
+	for (( row=1;row<=$ROW;row++ ))
 	do
-		for (( column=1;column<=3;column++ ))
+		for (( column=1;column<=$COLUMN;column++ ))
 		do
 			echo -e "| ${board[$row,$column]} | \c"
 		done
@@ -114,16 +114,37 @@ function placeMark(){
 	fi
 }
 
-#start execution
+#calculate column's position
+function calColumn(){
+	if [[ $1%$COLUMN -eq 0 ]]
+	then
+		column=$COLUMN;
+	else
+		column=$(($1%$COLUMN))
+	fi
+	echo $column
+}
+
+
+#Execution start from here
 resetBoard
 while [[ $moveCount -le $TOTAL_COUNT ]]
 do
-	read -p "Enter row no. " row
-	read -p "Enter column no. " column
-	placeMark $row $column
+	if [[ $currentPlayer == x ]]
+	then
+		read -p "Enter board position between 1-9 : " position
+		#Calculate row and column positions
+		row=$(((($position-1)/$ROW)+1))
+		column=$( calColumn $position )
+		placeMark $row $column
+	else
+		row=$(((RANDOM%3)+1))
+		column=$(((RANDOM%3)+1))
+		placeMark $row $column
+	fi
 	((moveCount++))
 done
 if [[ $gameStatus -eq 0 ]]
 then
-	echo "Match tie !!! "
+	echo "Match tie ! "
 fi
