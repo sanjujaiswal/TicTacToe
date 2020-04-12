@@ -4,9 +4,10 @@ echo "-----Welcome to Tic-Tac-Toe Game-----"
 #Function to reset board
 function resetBoard(){
 	echo "Tic-Tac-Toe Game"
-	player=x;
+	currentPlayer=x;
 	gameStatus=1;
-	declare -A board;
+	declare -a board;
 }
 
 resetBoard
+echo $currentPlayer
