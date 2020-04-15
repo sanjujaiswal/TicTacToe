@@ -10,6 +10,7 @@ COLUMN=3
 #Variables declarations
 tossPlayer=0
 moveCount=1
+computerPlayer="0";
 #Array declaration
 declare -a board
 
@@ -20,7 +21,7 @@ function tossToPlayFirst(){
 	then
 		echo "x"
 	else
-		echo "0"
+		echo $computerPlayer
 	fi
 }
 
@@ -34,10 +35,10 @@ function resetBoard(){
 #Initialize to board
 function initialize(){
 	echo "Enter position on Board :"
-   for (( rowPosition=1;rowPosition<=3;rowPosition++ ))
+   for (( rowPosition=1;rowPosition<=$ROW;rowPosition++ ))
    do
       echo "---------"
-      for (( columnPosition=1;columnPosition<=3;columnPosition++ ))
+      for (( columnPosition=1;columnPosition<=$COLUMN;columnPosition++ ))
       do
          board[$rowPosition,$columnPosition]="-"
       done
@@ -71,17 +72,17 @@ function changePlayer(){
 
 #Function to check win condition
 function checkWin(){
-	gameStatus=0;
-	for (( i=1;i<=3;i++ ))
-	do
-		if [[ ${board[$i,1]} == $currentPlayer && ${board[$i,1]} == ${board[$i,2]} && ${board[$i,1]} == ${board[$i,3]} ]]
-		then
-			gameStatus=1;
-		fi
-		if [[ ${board[1,$i]} == $currentPlayer && ${board[1,$i]} == ${board[2,$i]} && ${board[1,$i]} == ${board[3,$i]} ]]
-		then
-			gameStatus=1;
-		fi
+gameStatus=0;
+for (( i=1;i<=3;i++ ))
+do
+	if [[ ${board[$i,1]} == $currentPlayer && ${board[$i,1]} == ${board[$i,2]} && ${board[$i,1]} == ${board[$i,3]} ]]
+	then
+		gameStatus=1;
+	fi
+	if [[ ${board[1,$i]} == $currentPlayer && ${board[1,$i]} == ${board[2,$i]} && ${board[1,$i]} == ${board[3,$i]} ]]
+	then
+		gameStatus=1;
+	fi
 	done
 
 	if [[ ${board[1,1]} == $currentPlayer &&  ${board[1,1]} == ${board[2,2]} && ${board[1,1]} == ${board[3,3]} ]]
@@ -103,15 +104,18 @@ function placeMark(){
 	then
 		board[$1,$2]=$currentPlayer
 		displayBoard
-		if [[ $( checkWin $(()) ) -eq 1 ]]
+		checkWin
+
+		if [[ $($gameStatus -eq 1) ]]
 		then
 			echo "$currentPlayer wins!!"
 			exit
 		fi
-		changePlayer $currentPlayer
-	else
-		echo "Position already occupied"
-	fi
+			changePlayer $currentPlayer
+
+		else
+			echo "Position already occupied"
+		fi
 }
 
 #calculate column's position
@@ -125,6 +129,24 @@ function calColumn(){
 	echo $column
 }
 
+#Check wheather win or not before play
+function playToWin(){
+	for (( row=1;row<=$ROW;row++ ))
+	do
+		for (( column=1;column<=$COLUMN;column++ ))
+		do
+			if [[ ${board[$row,$column]} == - ]]
+			then
+				board[$row,$column]=$currentPlayer
+				checkWin
+				if [[ $gameStatus -eq 0 ]]
+				then
+					board[$row,$column]="-"
+				fi
+			fi
+		done
+	done
+}
 
 #Execution start from here
 resetBoard
@@ -138,13 +160,16 @@ do
 		column=$( calColumn $position )
 		placeMark $row $column
 	else
+		playToWin
 		row=$(((RANDOM%3)+1))
 		column=$(((RANDOM%3)+1))
 		placeMark $row $column
 	fi
 	((moveCount++))
+
 done
+
 if [[ $gameStatus -eq 0 ]]
 then
-	echo "Match tie ! "
+	echo "Match tie !!! "
 fi
