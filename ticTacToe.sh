@@ -130,8 +130,22 @@ function calColumn(){
 	echo $column
 }
 
+#If no corners are avilable then select centre
+function availableCentre(){
+	if [[ $flag -eq 1 ]]
+	then
+		if [[ ${board[$2,$3]} == "-" ]]
+		then
+			board[$2,$3]=$1
+			displayBoard
+			gameStatus=0;
+			((moveCount++))
+			flag=0;
+		fi
+	fi
+}
 
-#take available corners if niether of player wins
+#Take available corners if no player is  winning
 function availableCorners(){
 	if [[ $flag -eq 1 ]]
 	then
@@ -186,28 +200,33 @@ function playWinAndBlockUser(){
 				fi
 			fi
 		done
-		if [[ $flag -eq 0 ]]
-		then
-			break
-		fi
+
+				if [[ $flag -eq 0 ]]
+				then
+						break
+				fi
 	done
 }
 
 #Execution start from here
 resetBoard
-while [[ $moveCount -le $TOTAL_COUNT ]]
+while [[ $moveCount -le $TOTALCOUNT ]]
 do
 	if [[ $currentPlayer == x ]]
 	then
-		read -p "Enter board position between 1-9 : " position
-		#Calculate row and column positions
+		read -p "Enter position between 1-9 : " position
+		#calculate row and column
 		row=$(((($position-1)/$ROW)+1))
-		column=$( calColumn $position )
+		column=$( calColumn $position ) 
 		placeMark $row $column
 	else
+		player="x";
 		playWinAndBlockUser $currentPlayer
 		playWinAndBlockUser $player
 		availableCorners $currentPlayer
+		row=$(($ROW/2+1))
+		column=$(($COLUMN/2+1))
+		availableCentre $currentPlayer $row $column
 		if [ $flag -eq 1 ]
 		then
 			row=$(((RANDOM%3)+1))
@@ -218,8 +237,7 @@ do
 		fi
 	fi
 done
-
 if [[ $gameStatus -eq 0 ]]
 then
-	echo "Match tie !!! "
+	echo "Match will tie !!! "
 fi
