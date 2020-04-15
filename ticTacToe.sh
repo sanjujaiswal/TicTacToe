@@ -6,6 +6,7 @@ NUMBER=2
 TOTAL_COUNT=9
 ROW=3
 COLUMN=3
+
 #Variables declarations
 tossPlayer=0
 moveCount=1
@@ -94,8 +95,6 @@ gameStatus=0;
 	then
 			gameStatus=1;
 	fi
-
-	echo $gameStatus
 }
 
 #Function to place mark on board
@@ -106,11 +105,11 @@ function placeMark(){
 		displayBoard
 		checkWin $currentPlayer
 
-		if [[ $($gameStatus -eq 1) ]]
+		if [[ $gameStatus -eq 1 ]]
 		then
 			echo "$currentPlayer wins!!"
-
 			exit
+
 		fi
 			changePlayer $currentPlayer
 			((moveCount++))
@@ -129,6 +128,32 @@ function calColumn(){
 		column=$(($1%$COLUMN))
 	fi
 	echo $column
+}
+
+
+#take available corners if niether of player wins
+function availableCorners(){
+	if [[ $flag -eq 1 ]]
+	then
+		for (( row=1;row<=$ROW;$((row+=2)) ))
+		do
+			for (( column=1;column<=$COLUMN;$((column+=2)) ))
+			do
+				if [[ ${board[$row,$column]} == "-" ]]
+				then
+					board[$row,$column]=$currentPlayer
+					displayBoard
+					gameStatus=0;
+					((moveCount++))
+					flag=0;
+				fi
+			done
+			if [[ $flag -eq 0 ]]
+			then
+				break;
+			fi
+		done
+	fi
 }
 
 #Block user if HUMAN/COMPUTER is winning
@@ -182,6 +207,7 @@ do
 	else
 		playWinAndBlockUser $currentPlayer
 		playWinAndBlockUser $player
+		availableCorners $currentPlayer
 		if [ $flag -eq 1 ]
 		then
 			row=$(((RANDOM%3)+1))
