@@ -4,13 +4,13 @@ echo "-----Welcome to Tic-Tac-Toe Game-----"
 #Constants declarations
 NUMBER=2
 TOTAL_COUNT=9
-COMPUTER="0"
 ROW=3
 COLUMN=3
 #Variables declarations
 tossPlayer=0
 moveCount=1
 computerPlayer="0";
+flag=1
 #Array declaration
 declare -a board
 
@@ -73,26 +73,26 @@ function changePlayer(){
 #Function to check win condition
 function checkWin(){
 gameStatus=0;
-for (( i=1;i<=3;i++ ))
-do
-	if [[ ${board[$i,1]} == $currentPlayer && ${board[$i,1]} == ${board[$i,2]} && ${board[$i,1]} == ${board[$i,3]} ]]
-	then
-		gameStatus=1;
-	fi
-	if [[ ${board[1,$i]} == $currentPlayer && ${board[1,$i]} == ${board[2,$i]} && ${board[1,$i]} == ${board[3,$i]} ]]
-	then
-		gameStatus=1;
-	fi
+	for (( i=1;i<=3;i++ ))
+	do
+		if [[ ${board[$i,1]} == $currentPlayer && ${board[$i,1]} == ${board[$i,2]} && ${board[$i,1]} == ${board[$i,3]} ]]
+		then
+				gameStatus=1;
+		fi
+		if [[ ${board[1,$i]} == $currentPlayer && ${board[1,$i]} == ${board[2,$i]} && ${board[1,$i]} == ${board[3,$i]} ]]
+		then
+				gameStatus=1;
+		fi
 	done
 
 	if [[ ${board[1,1]} == $currentPlayer &&  ${board[1,1]} == ${board[2,2]} && ${board[1,1]} == ${board[3,3]} ]]
 	then
-		gameStatus=1;
+			gameStatus=1;
 	fi
 
 	if [[ ${board[1,3]} == $currentPlayer && ${board[1,3]} == ${board[2,2]} && ${board[1,3]} == ${board[3,1]} ]]
 	then
-		gameStatus=1;
+			gameStatus=1;
 	fi
 
 	echo $gameStatus
@@ -104,14 +104,16 @@ function placeMark(){
 	then
 		board[$1,$2]=$currentPlayer
 		displayBoard
-		checkWin
+		checkWin $currentPlayer
 
 		if [[ $($gameStatus -eq 1) ]]
 		then
 			echo "$currentPlayer wins!!"
+
 			exit
 		fi
 			changePlayer $currentPlayer
+			((moveCount++))
 
 		else
 			echo "Position already occupied"
@@ -129,22 +131,40 @@ function calColumn(){
 	echo $column
 }
 
-#Check wheather win or not before play
-function playToWin(){
+#Block user if HUMAN/COMPUTER is winning
+function playWinAndBlockUser(){
+	flag=1;
 	for (( row=1;row<=$ROW;row++ ))
 	do
 		for (( column=1;column<=$COLUMN;column++ ))
 		do
 			if [[ ${board[$row,$column]} == - ]]
 			then
-				board[$row,$column]=$currentPlayer
-				checkWin
+				board[$row,$column]=$1
+				checkWin $1
 				if [[ $gameStatus -eq 0 ]]
 				then
 					board[$row,$column]="-"
+				elif [[ $gameStatus == 1 && ${board[$row,$column]} == $currentPlayer ]]
+				then
+					displayBoard
+					echo "$currentPlayer wins !!!"
+					exit
+				elif [[ $gameStatus -eq 1 ]]
+				then
+					board[$row,$column]=$currentPlayer
+					displayBoard
+					gameStatus=0
+					((moveCount++))
+					flag=0;
+					break
 				fi
 			fi
 		done
+		if [[ $flag -eq 0 ]]
+		then
+			break
+		fi
 	done
 }
 
@@ -160,13 +180,17 @@ do
 		column=$( calColumn $position )
 		placeMark $row $column
 	else
-		playToWin
-		row=$(((RANDOM%3)+1))
-		column=$(((RANDOM%3)+1))
-		placeMark $row $column
+		playWinAndBlockUser $currentPlayer
+		playWinAndBlockUser $player
+		if [ $flag -eq 1 ]
+		then
+			row=$(((RANDOM%3)+1))
+			column=$(((RANDOM%3)+1))
+			placeMark $row $column
+		else
+			changePlayer $currentPlayer
+		fi
 	fi
-	((moveCount++))
-
 done
 
 if [[ $gameStatus -eq 0 ]]
