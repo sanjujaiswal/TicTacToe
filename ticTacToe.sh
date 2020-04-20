@@ -35,16 +35,14 @@ function resetBoard(){
 
 #Initialize to board
 function initialize(){
-	echo "Enter position on Board :"
-   for (( rowPosition=1;rowPosition<=$ROW;rowPosition++ ))
+	for (( rowPosition=1;rowPosition<=$ROW;rowPosition++ ))
    do
-      echo "---------"
-      for (( columnPosition=1;columnPosition<=$COLUMN;columnPosition++ ))
+		for (( columnPosition=1;columnPosition<=$COLUMN;columnPosition++ ))
       do
-         board[$rowPosition,$columnPosition]="-"
-      done
-   done
-		displayBoard
+			board[$rowPosition,$columnPosition]="-"
+		done
+	done
+			displayBoard
 }
 
 #Function to display board
@@ -119,7 +117,7 @@ function placeMark(){
 		fi
 }
 
-#calculate column's position
+#Calculate column's position
 function calColumn(){
 	if [[ $1%$COLUMN -eq 0 ]]
 	then
@@ -131,7 +129,7 @@ function calColumn(){
 }
 
 #If no corners are avilable then select centre
-function availableCentre(){
+function assignCornerCentreSide(){
 	if [[ $flag -eq 1 ]]
 	then
 		if [[ ${board[$2,$3]} == "-" ]]
@@ -146,26 +144,26 @@ function availableCentre(){
 }
 
 #Take available corners if no player is  winning
-function availableCorners(){
+function availableCornersCentreSide(){
 	if [[ $flag -eq 1 ]]
 	then
+		#Take corners
 		for (( row=1;row<=$ROW;$((row+=2)) ))
 		do
 			for (( column=1;column<=$COLUMN;$((column+=2)) ))
 			do
-				if [[ ${board[$row,$column]} == "-" ]]
-				then
-					board[$row,$column]=$currentPlayer
-					displayBoard
-					gameStatus=0;
-					((moveCount++))
-					flag=0;
-				fi
+				assignCornerCentreSide $1 $row $column
 			done
-			if [[ $flag -eq 0 ]]
-			then
-				break;
-			fi
+		done
+		#Take Centre
+		assignCornerCentreSide $1 $(($ROW/2+1)) $(($COLUMN/2+1))
+		#Take sides
+		for (( row=1;row<=$ROW;row++ ))
+		do
+			for (( column=1;column<=$COLUMN;column++ ))
+			do
+				assignCornerCentreSide $1 $row $column
+			done
 		done
 	fi
 }
@@ -210,7 +208,7 @@ function playWinAndBlockUser(){
 
 #Execution start from here
 resetBoard
-while [[ $moveCount -le $TOTALCOUNT ]]
+while [[ $moveCount -le $TOTAL_COUNT ]]
 do
 	if [[ $currentPlayer == x ]]
 	then
@@ -223,10 +221,11 @@ do
 		player="x";
 		playWinAndBlockUser $currentPlayer
 		playWinAndBlockUser $player
-		availableCorners $currentPlayer
+		availableCornersCentreSide $currentPlayer
 		row=$(($ROW/2+1))
 		column=$(($COLUMN/2+1))
 		availableCentre $currentPlayer $row $column
+
 		if [ $flag -eq 1 ]
 		then
 			row=$(((RANDOM%3)+1))
