@@ -1,22 +1,21 @@
-#!/bin/bash -x
-echo "-----Welcome to Tic-Tac-Toe Game-----"
+#!/bin/bash
 
-#Constants declarations
-NUMBER=2
+#Constants declaration
 TOTAL_COUNT=9
 ROW=3
 COLUMN=3
-
-#Variables declarations
-tossPlayer=0
-moveCount=1
+NUMBER=2
+#Variables declaration
+moveCount=1;
 computerPlayer="0";
-flag=1
-#Array declaration
-declare -a board
+flag=1;
 
-#Toss to play first
-function tossToPlayFirst(){
+#Array declaration
+declare -A board
+
+
+#Toss tomplay first
+function tossPlayer(){
 	tossPlayer=$((RANDOM%NUMBER))
 	if [ $tossPlayer -eq 0 ]
 	then
@@ -28,26 +27,25 @@ function tossToPlayFirst(){
 
 #Function to reset board
 function resetBoard(){
-	currentPlayer=$( tossToPlayFirst );
+	echo "Tic Tac Toe Game"
+	currentPlayer=$( tossPlayer );
 	gameStatus=0;
-	initialize
+	initalize
 }
-
-#Initialize to board
-function initialize(){
-	for (( rowPosition=1;rowPosition<=$ROW;rowPosition++ ))
-   do
-		for (( columnPosition=1;columnPosition<=$COLUMN;columnPosition++ ))
-      do
+#Initialization of board
+function initalize(){
+	for (( rowPosition=1;$rowPosition<=$ROW;rowPosition++ ))
+	do
+		for (( columnPosition=1;$columnPosition<=$COLUMN;columnPosition++ ))
+		do
 			board[$rowPosition,$columnPosition]="-"
 		done
 	done
 			displayBoard
 }
-
-#Function to display board
+#Display the board
 function displayBoard(){
-echo "---------------"
+	echo "---------------"
 	for (( row=1;row<=$ROW;row++ ))
 	do
 		for (( column=1;column<=$COLUMN;column++ ))
@@ -58,8 +56,7 @@ echo "---------------"
 	done
 	echo "---------------"
 }
-
-#Change the player turn
+#Change players turn
 function changePlayer(){
 	if [[ $1 == "x" ]]
 	then
@@ -68,56 +65,50 @@ function changePlayer(){
 		currentPlayer="x";
 	fi
 }
-
-#Function to check win condition
+#Check win conditions
 function checkWin(){
-gameStatus=0;
-	for (( i=1;i<=3;i++ ))
+	gameStatus=0;
+	for (( i=1;i<=$ROW;i++ ))
 	do
-		if [[ ${board[$i,1]} == $currentPlayer && ${board[$i,1]} == ${board[$i,2]} && ${board[$i,1]} == ${board[$i,3]} ]]
+		if [[ ${board[$i,1]} == $1 && ${board[$i,1]} == ${board[$i,2]} && ${board[$i,1]} == ${board[$i,3]} ]]
 		then
-				gameStatus=1;
+			gameStatus=1;
 		fi
-		if [[ ${board[1,$i]} == $currentPlayer && ${board[1,$i]} == ${board[2,$i]} && ${board[1,$i]} == ${board[3,$i]} ]]
+		if [[ ${board[1,$i]} == $1 && ${board[1,$i]} == ${board[2,$i]} && ${board[1,$i]} == ${board[3,$i]} ]]
 		then
-				gameStatus=1;
+			gameStatus=1;
 		fi
 	done
-
-	if [[ ${board[1,1]} == $currentPlayer &&  ${board[1,1]} == ${board[2,2]} && ${board[1,1]} == ${board[3,3]} ]]
+	if [[ ${board[1,1]} == $1 &&  ${board[1,1]} == ${board[2,2]} && ${board[1,1]} == ${board[3,3]} ]]
 	then
-			gameStatus=1;
+		gameStatus=1;
 	fi
-
-	if [[ ${board[1,3]} == $currentPlayer && ${board[1,3]} == ${board[2,2]} && ${board[1,3]} == ${board[3,1]} ]]
+	if [[ ${board[1,3]} == $1 && ${board[1,3]} == ${board[2,2]} && ${board[1,3]} == ${board[3,1]} ]]
 	then
-			gameStatus=1;
+		gameStatus=1;
 	fi
 }
 
-#Function to place mark on board
+#Write mark on board
 function placeMark(){
 	if [[ ${board[$1,$2]} == - ]]
 	then
 		board[$1,$2]=$currentPlayer
 		displayBoard
 		checkWin $currentPlayer
-
 		if [[ $gameStatus -eq 1 ]]
 		then
-			echo "$currentPlayer wins!!"
+			echo "$currentPlayer wins !!"
 			exit
-
 		fi
-			changePlayer $currentPlayer
-			((moveCount++))
-
-		else
-			echo "Position already occupied"
-		fi
+		changePlayer $currentPlayer
+		((moveCount++))
+	else
+		echo "Position already occupied"
+	fi
 }
 
-#Calculate column's position
+#Calculate column
 function calColumn(){
 	if [[ $1%$COLUMN -eq 0 ]]
 	then
@@ -128,7 +119,7 @@ function calColumn(){
 	echo $column
 }
 
-#If no corners are avilable then select centre
+#Set player mark at position
 function assignCornerCentreSide(){
 	if [[ $flag -eq 1 ]]
 	then
@@ -143,7 +134,7 @@ function assignCornerCentreSide(){
 	fi
 }
 
-#Take available corners if no player is  winning
+#Take any available corners,centre and side if neither of player is winnig.
 function availableCornersCentreSide(){
 	if [[ $flag -eq 1 ]]
 	then
@@ -155,7 +146,7 @@ function availableCornersCentreSide(){
 				assignCornerCentreSide $1 $row $column
 			done
 		done
-		#Take Centre
+		#Take Centre 
 		assignCornerCentreSide $1 $(($ROW/2+1)) $(($COLUMN/2+1))
 		#Take sides
 		for (( row=1;row<=$ROW;row++ ))
@@ -167,8 +158,7 @@ function availableCornersCentreSide(){
 		done
 	fi
 }
-
-#Block user if HUMAN/COMPUTER is winning
+#check play win and block user if he/she is winning
 function playWinAndBlockUser(){
 	flag=1;
 	for (( row=1;row<=$ROW;row++ ))
@@ -185,7 +175,7 @@ function playWinAndBlockUser(){
 				elif [[ $gameStatus == 1 && ${board[$row,$column]} == $currentPlayer ]]
 				then
 					displayBoard
-					echo "$currentPlayer wins !!!"
+					echo "$currentPlayer wins !"
 					exit
 				elif [[ $gameStatus -eq 1 ]]
 				then
@@ -198,45 +188,66 @@ function playWinAndBlockUser(){
 				fi
 			fi
 		done
-
-				if [[ $flag -eq 0 ]]
-				then
-						break
-				fi
+		if [[ $flag -eq 0 ]]
+		then
+			break
+		fi
 	done
 }
-
-#Execution start from here
-resetBoard
-while [[ $moveCount -le $TOTAL_COUNT ]]
-do
-	if [[ $currentPlayer == x ]]
-	then
-		read -p "Enter position between 1-9 : " position
-		#calculate row and column
-		row=$(((($position-1)/$ROW)+1))
-		column=$( calColumn $position ) 
-		placeMark $row $column
-	else
-		player="x";
-		playWinAndBlockUser $currentPlayer
-		playWinAndBlockUser $player
-		availableCornersCentreSide $currentPlayer
-		row=$(($ROW/2+1))
-		column=$(($COLUMN/2+1))
-		availableCentre $currentPlayer $row $column
-
-		if [ $flag -eq 1 ]
+ 
+# function to play with computer
+function computer(){
+	moveCount=0;
+	while [[ $moveCount -le $TOTAL_COUNT ]]
+	do
+		if [[ $currentPlayer == x ]]
 		then
-			row=$(((RANDOM%3)+1))
-			column=$(((RANDOM%3)+1))
+			read -p "Enter position between 1-9 : " position
+			#calculate row and column
+			row=$(((($position-1)/$ROW)+1))
+			column=$( calColumn $position )
 			placeMark $row $column
 		else
+			player="x";
+			playWinAndBlockUser $currentPlayer
+			playWinAndBlockUser $player
+			availableCornersCentreSide $currentPlayer
 			changePlayer $currentPlayer
 		fi
-	fi
-done
+	done
+}
+#function for other player
+function otherPlayer(){
+	moveCount=0;
+	while [[ $moveCount -le $TOTAL_COUNT ]]
+	do
+		if [[ $currentPlayer == x ]]
+		then
+			read -p "Enter position between 1-9 : " position
+			#calculate row and column
+			row=$(((($position-1)/$ROW)+1))
+			column=$( calColumn $position )
+			placeMark $row $column
+		else
+			read -p "Enter position b/w 1-9 : " position
+			row=$(((($position-1)/$ROW)+1))
+			column=$( calColumn $position )
+			placeMark $row $column
+		fi
+	done
+}
+#start execution
+resetBoard
+read -p "Enter choice : 1.Computer 2.otherPlayer" inputForPlayer
+case $inputForPlayer in
+	1)
+		computer
+		;;
+	2)
+		otherPlayer
+		;;
+esac
 if [[ $gameStatus -eq 0 ]]
 then
-	echo "Match will tie !!! "
+	echo "Match tie !!! "
 fi
